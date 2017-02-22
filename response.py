@@ -1,5 +1,6 @@
 """ Configure Bot Reactions """
 import time
+import re
 from random import randint
 
 class Patrick:
@@ -8,6 +9,10 @@ class Patrick:
         """ Constructor """
         self.slack_client = slack_client
         self.bot_id = bot_id
+        self.mood = 0
+        self.is_this_pattern = re.compile("[Ii]s this [\s\S]*\?")
+        self.message_counter = 0
+        self.last_mood_change = 0
 
 
     def react(self, history, channel_id):
@@ -20,13 +25,25 @@ class Patrick:
 
         history = self.crop_history(history)
         for message in history['messages']:
-            if "instrument" in message['text'] \
-            or "music" in message['text']:
-                self.ask_if_mayonese_is_an_instrument(channel_id)
-            elif self.message_has_sign_of_bad_mood(message['text']):
-                self.tell_story_of_the_ugly_barnacle(channel_id, message)
-            elif randint(1, 101) == 42:
-                self.ask_if_user_is_an_instrument(channel_id, message)
+            if self.mood < 3:
+                if "instrument" in message['text'] \
+                or "music" in message['text']:
+                    self.ask_if_mayonese_is_an_instrument(channel_id)
+
+                elif self.message_has_sign_of_bad_mood(message['text']):
+                    self.tell_story_of_the_ugly_barnacle(channel_id, message)
+
+                elif self.message_asks_if_this_is_the_crusty_crab(message['text'], channel_id):
+                    self.no_this_is_patrick(channel_id)
+
+                elif randint(1, 101) == 42:
+                    self.ask_if_user_is_an_instrument(channel_id, message)
+
+            if self.message_asks_how_patricks_mood_is(message['text']):
+                self.tell_mood(channel_id)
+
+            self.message_counter += 1
+            self.adjustMood()
 
 
     def crop_history(self, history_data):
@@ -78,7 +95,7 @@ class Patrick:
 
     def tell_story_of_the_ugly_barnacle(self, channel_id, message):
         """ Tells the Story of the Ugly Barnacle """
-        
+
         userFirstName = self.slack_client.api_call("users.info", user=message['user'])['user']['profile']['first_name']
         storyText1 = "Oh " + userFirstName + " maybe a story will cheer you up!"
         storyText2 = "It's called the \"Ugly Barnacle\""
@@ -91,6 +108,24 @@ class Patrick:
         self.postMessage(channel_id, storyText3)
         time.sleep(2)
         self.postMessage(channel_id, storyText4)
+
+    
+    def no_this_is_patrick(self, channel_id):
+        """ NO THIS IS PATRICK """
+        mood_dict = {0: "No this is Patrick :slightly_smiling_face:", 1: "No this is Patrick! :angry:", 2: "NO THIS IS PATRICK! :rage:"}
+        self.postMessage(channel_id, mood_dict[self.mood])
+        self.makeAngry()
+
+    
+    def tell_mood(self, channel_id):
+        mood_dict = {0: "I'm happy! :blush:", 1: "I'm slightly upset.", 2: "I'm Angry! :angry:"}
+        text = ""
+        if (self.mood > 2):
+            text = "I'M TRIGGERED :rage: :rage: :rage:"
+        else:
+            text = mood_dict[self.mood]
+        
+        self.postMessage(channel_id, text)
 
 
     def message_has_sign_of_bad_mood(self, text):
@@ -106,3 +141,46 @@ class Patrick:
                 return True
 
         return False
+
+    def message_asks_if_this_is_the_crusty_crab(self, text, channel_id):
+        """ Checks if the Message asks for the Crusty Crab """
+        text = text.lower()
+        if text == "is this patrick?":
+            self.postMessage(channel_id, "Yes this is Patrick :blush:")
+            self.makeHappy()
+            return False
+        else:
+            return self.is_this_pattern.match(text)
+
+
+    def message_asks_how_patricks_mood_is(self, text):
+        """ Check is the Message asks Patrick how he feels """
+        text = text.lower()
+        questions = ["how are you <@" + self.bot_id.lower() + ">?", "<@" + self.bot_id.lower() + "> how are you?"]
+        print questions
+        print text
+        for question in questions:
+            if text == question:
+                return True
+                
+        return False
+
+
+    def adjustMood(self):
+        """ Calms Patrick down after a specific amount of messages """
+
+        # It needs 20 * mood Messages to calm Patrick down
+        if self.mood > 0 and self.message_counter - self.last_mood_change > 2 * self.mood:
+            self.mood = self.mood - 1
+            self.last_mood_change = self.message_counter
+    
+
+    def makeAngry(self):
+        """ Makes Patrick Angry """
+        self.mood = self.mood + 1
+        self.last_mood_change = self.message_counter
+
+    def makeHappy(self):
+        """ Makes Patrick Happy """
+        self.mood = 0
+        self.last_mood_change = self.message_counter
