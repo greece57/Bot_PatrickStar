@@ -1,7 +1,7 @@
 """ Fetching the last messages every second """
 import time
 from slackclient import SlackClient
-from response import react
+from response import Patrick
 
 def get_latest_message(history_data, curr_latest):
     """ Returns the TimeStamp of the latest message of a given history """
@@ -42,6 +42,7 @@ if __name__ == "__main__":
 
     if SC.api_call("api.test")['ok'] is True:
         BOT_ID = SC.api_call("auth.test")['user_id']
+        PATRICK_BOT = Patrick(SC, BOT_ID)
         print "StarterBot connected and running!"
 
         latestMessage = remove_initial_history()
@@ -52,13 +53,13 @@ if __name__ == "__main__":
                 history = SC.api_call("groups.history", channel=group['id'], oldest=latestMessage)
                 latestMessage = get_latest_message(history, latestMessage)
                 
-                react(SC, history, group['id'], BOT_ID)
+                PATRICK_BOT.react(history, group['id'])
 
             for channel in channels:
                 history = SC.api_call("channels.history", channel=channel['id'], oldest=latestMessage)
                 latestMessage = get_latest_message(history, latestMessage)
 
-                react(SC, history, channel['id'], BOT_ID)
+                PATRICK_BOT.react(history, channel['id'])
 
             print "Latest Timestamp: " + str(latestMessage)
             time.sleep(READ_HISTORY_DELAY)
