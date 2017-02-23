@@ -106,7 +106,6 @@ class Patrick(object):
         if self.last_method == None:
             self.post_message(channel_id, self.NO_SOURCE_TEXT)
         for reaction in self.REACTIONS:
-            print reaction.IDENTIFIER + " - " + self.last_method
             if self.last_method == reaction.IDENTIFIER:
                 self.post_message(channel_id, reaction.SOURCE)
 
