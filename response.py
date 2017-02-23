@@ -11,7 +11,8 @@ class Patrick(object):
                 "don't feel so well", "don't feel well", " sad", " ill", "feel down", \
                 ":disappointed:", ":confused:", ":slightly_frowning_face:", ":pensive:", \
                 ":expressionless:", ":neutral_face:", ":worried:", ":white_frowning_face:", \
-                ":confounded:", ":tired_face:", ":weary:", ":cry:", ":sob:"]
+                ":confounded:", ":tired_face:", ":weary:", ":cry:", ":sob:", \
+                ":(", ":/", ";(", ":'("]
 
     THIS_IS_PATRICK_MOOD_DICT = {0: "No this is Patrick :slightly_smiling_face:", \
                                  1: "No this is Patrick! :angry:", \
