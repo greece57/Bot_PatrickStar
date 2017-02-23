@@ -13,7 +13,7 @@ class Patrick(object):
                 ":disappointed:", ":confused:", ":slightly_frowning_face:", ":pensive:", \
                 ":expressionless:", ":neutral_face:", ":worried:", ":white_frowning_face:", \
                 ":confounded:", ":tired_face:", ":weary:", ":cry:", ":sob:", \
-                ":(", ":/", ";(", ":'("]
+                " :(", " :/", " ;(", " :'("]
 
     THIS_IS_PATRICK_MOOD_DICT = {0: "No this is Patrick :slightly_smiling_face:", \
                                  1: "No this is Patrick! :angry:", \
@@ -24,7 +24,8 @@ class Patrick(object):
                          2: "I'm Angry! :angry:"}
 
     LAST_METHOD_SOURCE = {None: \
-                            "I don't know", \
+                            "the inner machinations of my mind are an enigma\n\n" + \
+                            "https://www.youtube.com/watch?v=KNZSXnrbs_k", \
                           PatricksReactions.INSTRUMENT: \
                             "https://youtu.be/d1JA-nh0IfI?t=4s", \
                           PatricksReactions.THIS_IS_PATRICK: \

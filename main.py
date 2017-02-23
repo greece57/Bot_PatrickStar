@@ -90,7 +90,7 @@ def main_loop():
         except KeyboardInterrupt:
             raise
         except:
-            print ("Error! Trying to resume...")
+            print ("Error! Trying to resume...                  ")
 
 
 if __name__ == "__main__":
