@@ -6,6 +6,22 @@ from random import randint
 class Patrick(object):
     """ Patrick Bot - Does what Patrick does """
 
+
+    BAD_MOOD = ["bad mood", "not so good", "don't feel good", "don't feel so good", \
+                "don't feel so well", "don't feel well", " sad", " ill", "feel down", \
+                ":disappointed:", ":confused:", ":slightly_frowning_face:", ":pensive:", \
+                ":expressionless:", ":neutral_face:", ":worried:", ":white_frowning_face:", \
+                ":confounded:", ":tired_face:", ":weary:", ":cry:", ":sob:"]
+
+    THIS_IS_PATRICK_MOOD_DICT = {0: "No this is Patrick :slightly_smiling_face:", \
+                                 1: "No this is Patrick! :angry:", \
+                                 2: "NO THIS IS PATRICK! :rage:"}
+
+    MOOD_COMMENT_DICT = {0: "I'm happy! :blush:", \
+                         1: "I'm slightly upset.", \
+                         2: "I'm Angry! :angry:"}
+
+
     def __init__(self, slack_client, bot_id):
         """ Constructor """
         self.slack_client = slack_client
@@ -93,40 +109,40 @@ class Patrick(object):
         user = self.slack_client.api_call("users.info", user=message['user'])['user']
         response_text = "Is " + str(user['profile']['first_name']) + " an instrument?"
         self.post_message(channel_id, response_text)
-        
+
 
     def tell_story_of_the_ugly_barnacle(self, channel_id, message):
         """ Tells the Story of the Ugly Barnacle """
 
-        userFirstName = self.slack_client.api_call("users.info", user=message['user'])['user']['profile']['first_name']
-        storyText1 = "Oh " + userFirstName + " maybe a story will cheer you up!"
-        storyText2 = "It's called the \"Ugly Barnacle\""
-        storyText3 = "Once there was an ugly barnacle! He was so ugly that everyone died"
-        storyText4 = "The end! :D"
-        self.post_message(channel_id, storyText1)
+        user_first_name = self.slack_client.api_call("users.info", \
+                                            user=message['user'])['user']['profile']['first_name']
+        story_text = {0: "Oh " + user_first_name + " maybe a story will cheer you up!", \
+                      1: "It's called the \"Ugly Barnacle\"", \
+                      2: "Once there was an ugly barnacle! He was so ugly that everyone died", \
+                      3: "The end! :D"}
+        self.post_message(channel_id, story_text[0])
         time.sleep(2)
-        self.post_message(channel_id, storyText2)
+        self.post_message(channel_id, story_text[1])
         time.sleep(2)
-        self.post_message(channel_id, storyText3)
+        self.post_message(channel_id, story_text[2])
         time.sleep(2)
-        self.post_message(channel_id, storyText4)
+        self.post_message(channel_id, story_text[3])
 
-    
+
     def no_this_is_patrick(self, channel_id):
         """ NO THIS IS PATRICK """
-        mood_dict = {0: "No this is Patrick :slightly_smiling_face:", 1: "No this is Patrick! :angry:", 2: "NO THIS IS PATRICK! :rage:"}
-        self.post_message(channel_id, mood_dict[self.mood])
+        self.post_message(channel_id, self.THIS_IS_PATRICK_MOOD_DICT[self.mood])
         self.make_angry()
 
-    
+
     def tell_mood(self, channel_id):
-        mood_dict = {0: "I'm happy! :blush:", 1: "I'm slightly upset.", 2: "I'm Angry! :angry:"}
+        """ Sends Message to communicate his current Mood """
         text = ""
-        if (self.mood > 2):
+        if self.mood > 2:
             text = "I'M TRIGGERED :rage: :rage: :rage:"
         else:
-            text = mood_dict[self.mood]
-        
+            text = self.MOOD_COMMENT_DICT[self.mood]
+
         self.post_message(channel_id, text)
 
 
@@ -134,12 +150,7 @@ class Patrick(object):
         """ Checks if a Message has signs of bad mood of the author - e.g. sad smilies """
 
         text = text.lower()
-        bad_mood = ["bad mood", "not so good", "don't feel good", "don't feel so good", \
-                    "don't feel so well", "don't feel well", " sad", " ill", "feel down", \
-                    ":disappointed:", ":confused:", ":slightly_frowning_face:", ":pensive:", \
-                    ":expressionless:", ":neutral_face:", ":worried:", ":white_frowning_face:", \
-                    ":confounded:", ":tired_face:", ":weary:", ":cry:", ":sob:"]
-        for bad_mood_text in bad_mood:
+        for bad_mood_text in self.BAD_MOOD:
             if bad_mood_text in text:
                 return True
 
@@ -161,8 +172,7 @@ class Patrick(object):
         text = text.lower()
         questions = ["how are you <@" + self.bot_id.lower() + ">?", \
                     "<@" + self.bot_id.lower() + "> how are you?"]
-        print questions
-        print text
+
         for question in questions:
             if text == question:
                 return True
@@ -174,7 +184,7 @@ class Patrick(object):
         """ Calms Patrick down after a specific amount of messages """
 
         # It needs 20 * mood Messages to calm Patrick down
-        if self.mood > 0 and self.message_counter - self.last_mood_change > 2 * self.mood:
+        if self.mood > 0 and self.message_counter - self.last_mood_change > 4 * self.mood:
             self.mood = self.mood - 1
             self.last_mood_change = self.message_counter
 

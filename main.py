@@ -3,14 +3,17 @@ import time
 from slackclient import SlackClient
 from response import Patrick
 
+READ_HISTORY_DELAY = 2
+API_TOKEN = "#"
+
 def get_latest_message(history_data, curr_latest):
     """ Returns the TimeStamp of the latest message of a given history """
     messages = history_data['messages']
     if len(messages) == 0:
         return curr_latest
-    latest_message = messages[0]
-    if curr_latest < latest_message['ts']:
-        return latest_message['ts']
+    new_latest = messages[0]
+    if curr_latest < new_latest['ts']:
+        return new_latest['ts']
     else:
         return curr_latest
 
@@ -30,9 +33,47 @@ def remove_initial_history():
 
     return latest
 
+def retrieve_groups(slack_client):
+    """ get all Groups where Bot is in """
+
+
+def main_loop(slack_client):
+    """ Main Loop of the Bot """
+
+    latest_message = remove_initial_history()
+    while True:
+        response_groups = SC.api_call("groups.list")
+        response_channels = SC.api_call("channels.list")
+        if response_groups['ok'] and response_channels['ok']:
+            groups = response_groups['groups']
+            channels = response_channels['channels']
+            for group in groups:
+                history = SC.api_call("groups.history", channel=group['id'], \
+                                        oldest=latest_message)
+                latest_message = get_latest_message(history, latest_message)
+
+                PATRICK_BOT.react(history, group['id'])
+
+            for channel in channels:
+                history = SC.api_call("channels.history", channel=channel['id'], \
+                                        oldest=latest_message)
+                latest_message = get_latest_message(history, latest_message)
+
+                PATRICK_BOT.react(history, channel['id'])
+
+        # Retrieving Error
+        else:
+            if not response_groups['ok']:
+                print "Error while retrieving Groups: " + response_groups['error']
+
+            if not response_channels['ok']:
+                print "Error while retrieving Channels: " + response_channels['error']
+
+        time.sleep(READ_HISTORY_DELAY)
+
+
+
 if __name__ == "__main__":
-    READ_HISTORY_DELAY = 2
-    API_TOKEN = "#"
 
     with open('token.key', 'r') as keyFile:
         while API_TOKEN.startswith("#"):
@@ -45,25 +86,6 @@ if __name__ == "__main__":
         PATRICK_BOT = Patrick(SC, BOT_ID)
         print "StarterBot connected and running!"
 
-        latestMessage = remove_initial_history()
-        while True:
-            groups = SC.api_call("groups.list")['groups']
-            channels = SC.api_call("channels.list")['channels']
-            for group in groups:
-                history = SC.api_call("groups.history", channel=group['id'], oldest=latestMessage)
-                latestMessage = get_latest_message(history, latestMessage)
-                
-                PATRICK_BOT.react(history, group['id'])
-
-            for channel in channels:
-                history = SC.api_call("channels.history", channel=channel['id'], oldest=latestMessage)
-                latestMessage = get_latest_message(history, latestMessage)
-
-                PATRICK_BOT.react(history, channel['id'])
-
-            print "Latest Timestamp: " + str(latestMessage)
-            time.sleep(READ_HISTORY_DELAY)
-
-
+        main_loop(SC)
     else:
         print "Connection failed. Invalid Slack token or bot ID?"
