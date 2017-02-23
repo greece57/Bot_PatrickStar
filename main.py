@@ -7,6 +7,7 @@ from response import Patrick
 
 READ_HISTORY_DELAY = 1
 API_TOKEN = "#"
+DEVMODE = True
 
 def get_latest_message(history_data, curr_latest):
     """ Returns the TimeStamp of the latest message of a given history """
@@ -71,12 +72,13 @@ def main_loop():
 
             PATRICK_BOT.react(history, group['id'])
 
-        for channel in channels:
-            history = SC.api_call("channels.history", channel=channel['id'], \
-                                    oldest=latest_message)
-            latest_message = get_latest_message(history, latest_message)
+        if not DEVMODE:
+            for channel in channels:
+                history = SC.api_call("channels.history", channel=channel['id'], \
+                                        oldest=latest_message)
+                latest_message = get_latest_message(history, latest_message)
 
-            PATRICK_BOT.react(history, channel['id'])
+                PATRICK_BOT.react(history, channel['id'])
 
         output = "." * (1 + seconds % 3) + "Latest message: " + latest_message + "   \r"
         print (output, end="")

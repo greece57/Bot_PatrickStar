@@ -2,6 +2,7 @@
 import time
 import re
 from random import randint
+from patrick_reactions import PatricksReactions
 
 class Patrick(object):
     """ Patrick Bot - Does what Patrick does """
@@ -22,6 +23,15 @@ class Patrick(object):
                          1: "I'm slightly upset.", \
                          2: "I'm Angry! :angry:"}
 
+    LAST_METHOD_SOURCE = {None: \
+                            "I don't know", \
+                          PatricksReactions.INSTRUMENT: \
+                            "https://youtu.be/d1JA-nh0IfI?t=4s", \
+                          PatricksReactions.THIS_IS_PATRICK: \
+                            "https://www.youtube.com/watch?v=YSzOXtXm8p0", \
+                          PatricksReactions.UGLY_BARNACLE: \
+                            "https://www.youtube.com/watch?v=WejTV7r3tkU"}
+
 
     def __init__(self, slack_client, bot_id):
         """ Constructor """
@@ -31,6 +41,7 @@ class Patrick(object):
         self.is_this_pattern = re.compile(r"[Ii]s this [\s\S]*\?")
         self.message_counter = 0
         self.last_mood_change = 0
+        self.last_method = None
 
 
     def react(self, history, channel_id):
@@ -44,7 +55,10 @@ class Patrick(object):
         history = self.crop_history(history)
         for message in history['messages']:
             if self.mood < 3:
-                if "instrument" in message['text'] \
+                if self.user_asks_for_source(message['text']):
+                    self.give_source(channel_id)
+
+                elif "instrument" in message['text'] \
                 or "music" in message['text']:
                     self.ask_if_mayonese_is_an_instrument(channel_id)
 
@@ -100,8 +114,9 @@ class Patrick(object):
 
     def ask_if_mayonese_is_an_instrument(self, channel_id):
         """ Asks if Mayonese is an instrument """
-
         self.post_message(channel_id, 'Is mayonnaise an instrument?')
+
+        self.last_method = PatricksReactions.INSTRUMENT
 
 
     def ask_if_user_is_an_instrument(self, channel_id, message):
@@ -110,6 +125,8 @@ class Patrick(object):
         user = self.slack_client.api_call("users.info", user=message['user'])['user']
         response_text = "Is " + str(user['profile']['first_name']) + " an instrument?"
         self.post_message(channel_id, response_text)
+
+        self.last_method = PatricksReactions.INSTRUMENT
 
 
     def tell_story_of_the_ugly_barnacle(self, channel_id, message):
@@ -120,7 +137,7 @@ class Patrick(object):
         story_text = {0: "Oh " + user_first_name + " maybe a story will cheer you up!", \
                       1: "It's called the \"Ugly Barnacle\"", \
                       2: "Once there was an ugly barnacle! He was so ugly that everyone died", \
-                      3: "The end! :D"}
+                      3: "The end! :upside_down_face:"}
         self.post_message(channel_id, story_text[0])
         time.sleep(2)
         self.post_message(channel_id, story_text[1])
@@ -129,11 +146,15 @@ class Patrick(object):
         time.sleep(2)
         self.post_message(channel_id, story_text[3])
 
+        self.last_method = PatricksReactions.UGLY_BARNACLE
+
 
     def no_this_is_patrick(self, channel_id):
         """ NO THIS IS PATRICK """
         self.post_message(channel_id, self.THIS_IS_PATRICK_MOOD_DICT[self.mood])
         self.make_angry()
+
+        self.last_method = PatricksReactions.THIS_IS_PATRICK
 
 
     def tell_mood(self, channel_id):
@@ -145,6 +166,14 @@ class Patrick(object):
             text = self.MOOD_COMMENT_DICT[self.mood]
 
         self.post_message(channel_id, text)
+
+        self.last_method = None
+
+
+    def give_source(self, channel_id):
+        """ Sends the source for the last message """
+        self.post_message(channel_id, self.LAST_METHOD_SOURCE[self.last_method])
+        self.last_method = None
 
 
     def message_has_sign_of_bad_mood(self, text):
@@ -171,14 +200,24 @@ class Patrick(object):
     def message_asks_how_patricks_mood_is(self, text):
         """ Check is the Message asks Patrick how he feels """
         text = text.lower()
-        questions = ["how are you <@" + self.bot_id.lower() + ">?", \
-                    "<@" + self.bot_id.lower() + "> how are you?"]
+        questions = ["how are you " + self.str_at_patrick() + "?", \
+                     self.str_at_patrick() + " how are you?"]
 
         for question in questions:
             if text == question:
                 return True
 
         return False
+
+    def user_asks_for_source(self, text):
+        """ Checks if user asks for source of last answer by Patrick """
+        text = text.lower()
+        if text == "why did you say that " + self.str_at_patrick() + "?" \
+        or text == self.str_at_patrick() + " why did you say that?" \
+        or text == self.str_at_patrick() + " source for that please":
+            return True
+        else:
+            return False
 
 
     def adjust_mood(self):
@@ -199,3 +238,7 @@ class Patrick(object):
         """ Makes Patrick Happy """
         self.mood = 0
         self.last_mood_change = self.message_counter
+
+    def str_at_patrick(self):
+        """ Returns "<@PATRICKS_BOT_ID>" as String """
+        return "<@" + self.bot_id.lower() + ">"
