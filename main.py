@@ -17,12 +17,32 @@ def get_latest_message(history_data, curr_latest):
     else:
         return curr_latest
 
+
+def retrieve_groups():
+    """ get all Groups where Bot is in """
+    response_groups = SC.api_call("groups.list")
+    response_channels = SC.api_call("channels.list")
+    if response_groups['ok'] and response_channels['ok']:
+        groups = response_groups['groups']
+        channels = response_channels['channels']
+        return groups, channels
+
+    # Retrieving Error
+    else:
+        if not response_groups['ok']:
+            print "Error while retrieving Groups: " + response_groups['error']
+
+        if not response_channels['ok']:
+            print "Error while retrieving Channels: " + response_channels['error']
+
+        return [], []
+
+
 def remove_initial_history():
     """ returns timestamp of latest message"""
 
     latest = 0
-    groups = SC.api_call("groups.list")['groups']
-    channels = SC.api_call("channels.list")['channels']
+    groups, channels = retrieve_groups()
     for group in groups:
         history = SC.api_call("groups.history", channel=group['id'], oldest=latest)
         latest = get_latest_message(history, latest)
@@ -33,41 +53,27 @@ def remove_initial_history():
 
     return latest
 
-def retrieve_groups(slack_client):
-    """ get all Groups where Bot is in """
 
-
-def main_loop(slack_client):
+def main_loop():
     """ Main Loop of the Bot """
 
     latest_message = remove_initial_history()
     while True:
-        response_groups = SC.api_call("groups.list")
-        response_channels = SC.api_call("channels.list")
-        if response_groups['ok'] and response_channels['ok']:
-            groups = response_groups['groups']
-            channels = response_channels['channels']
-            for group in groups:
-                history = SC.api_call("groups.history", channel=group['id'], \
-                                        oldest=latest_message)
-                latest_message = get_latest_message(history, latest_message)
+        groups, channels = retrieve_groups()
 
-                PATRICK_BOT.react(history, group['id'])
+        for group in groups:
+            history = SC.api_call("groups.history", channel=group['id'], \
+                                    oldest=latest_message)
+            latest_message = get_latest_message(history, latest_message)
 
-            for channel in channels:
-                history = SC.api_call("channels.history", channel=channel['id'], \
-                                        oldest=latest_message)
-                latest_message = get_latest_message(history, latest_message)
+            PATRICK_BOT.react(history, group['id'])
 
-                PATRICK_BOT.react(history, channel['id'])
+        for channel in channels:
+            history = SC.api_call("channels.history", channel=channel['id'], \
+                                    oldest=latest_message)
+            latest_message = get_latest_message(history, latest_message)
 
-        # Retrieving Error
-        else:
-            if not response_groups['ok']:
-                print "Error while retrieving Groups: " + response_groups['error']
-
-            if not response_channels['ok']:
-                print "Error while retrieving Channels: " + response_channels['error']
+            PATRICK_BOT.react(history, channel['id'])
 
         time.sleep(READ_HISTORY_DELAY)
 
@@ -86,6 +92,6 @@ if __name__ == "__main__":
         PATRICK_BOT = Patrick(SC, BOT_ID)
         print "StarterBot connected and running!"
 
-        main_loop(SC)
+        main_loop()
     else:
         print "Connection failed. Invalid Slack token or bot ID?"
