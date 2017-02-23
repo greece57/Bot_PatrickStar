@@ -2,8 +2,8 @@
 from __future__ import print_function
 import sys
 import time
+from patrick import Patrick
 from slackclient import SlackClient
-from response import Patrick
 
 READ_HISTORY_DELAY = 1
 API_TOKEN = "#"
