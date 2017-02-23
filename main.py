@@ -7,7 +7,7 @@ from response import Patrick
 
 READ_HISTORY_DELAY = 1
 API_TOKEN = "#"
-DEVMODE = True
+DEVMODE = False
 
 def get_latest_message(history_data, curr_latest):
     """ Returns the TimeStamp of the latest message of a given history """
@@ -63,30 +63,34 @@ def main_loop():
     latest_message = remove_initial_history()
     seconds = 0
     while True:
-        groups, channels = retrieve_groups()
+        try:
+            groups, channels = retrieve_groups()
 
-        for group in groups:
-            history = SC.api_call("groups.history", channel=group['id'], \
-                                    oldest=latest_message)
-            latest_message = get_latest_message(history, latest_message)
-
-            PATRICK_BOT.react(history, group['id'])
-
-        if not DEVMODE:
-            for channel in channels:
-                history = SC.api_call("channels.history", channel=channel['id'], \
+            for group in groups:
+                history = SC.api_call("groups.history", channel=group['id'], \
                                         oldest=latest_message)
                 latest_message = get_latest_message(history, latest_message)
 
-                PATRICK_BOT.react(history, channel['id'])
+                PATRICK_BOT.react(history, group['id'])
 
-        output = "." * (1 + seconds % 3) + "Latest message: " + latest_message + "   \r"
-        print (output, end="")
-        sys.stdout.flush()
+            if not DEVMODE:
+                for channel in channels:
+                    history = SC.api_call("channels.history", channel=channel['id'], \
+                                            oldest=latest_message)
+                    latest_message = get_latest_message(history, latest_message)
 
-        time.sleep(READ_HISTORY_DELAY)
-        seconds = seconds + READ_HISTORY_DELAY
+                    PATRICK_BOT.react(history, channel['id'])
 
+            output = "." * (1 + seconds % 3) + "Latest message: " + latest_message + "   \r"
+            print (output, end="")
+            sys.stdout.flush()
+
+            time.sleep(READ_HISTORY_DELAY)
+            seconds = seconds + READ_HISTORY_DELAY
+        except KeyboardInterrupt:
+            raise
+        except:
+            print ("Error! Trying to resume...")
 
 
 if __name__ == "__main__":
