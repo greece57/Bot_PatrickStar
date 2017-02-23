@@ -42,6 +42,7 @@ class Patrick(object):
                     if reaction.condition(message):
                         reaction.consequence(channel_id)
                         self.last_method = reaction.IDENTIFIER
+                        break
 
             if self.message_asks_how_patricks_mood_is(message['text']):
                 self.tell_mood(channel_id)

@@ -89,7 +89,7 @@ def main_loop():
             seconds = seconds + READ_HISTORY_DELAY
         except KeyboardInterrupt:
             raise
-        except:
+        #except:
             print ("Error! Trying to resume...                  ")
 
 
