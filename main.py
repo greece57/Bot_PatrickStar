@@ -48,11 +48,19 @@ def remove_initial_history():
     groups, channels = retrieve_groups()
     for group in groups:
         history = SC.api_call("groups.history", channel=group['id'], oldest=latest)
-        latest = get_latest_message(history, latest)
+        if not history['ok']:
+            print ("Error while retrieving History of Channel \"" + group['name'] \
+                    + "\": " + history['error'])
+        else:
+            latest = get_latest_message(history, latest)
 
     for channel in channels:
         history = SC.api_call("channels.history", channel=channel['id'], oldest=latest)
-        latest = get_latest_message(history, latest)
+        if not history['ok']:
+            print ("Error while retrieving History of Channel \"" + channel['name'] \
+                    + "\": " + history['error'])
+        else:
+            latest = get_latest_message(history, latest)
 
     return latest
 
@@ -89,7 +97,7 @@ def main_loop():
             seconds = seconds + READ_HISTORY_DELAY
         except KeyboardInterrupt:
             raise
-        #except:
+        except:
             print ("Error! Trying to resume...                  ")
 
 
