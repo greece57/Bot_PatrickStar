@@ -77,17 +77,25 @@ def main_loop():
             for group in groups:
                 history = SC.api_call("groups.history", channel=group['id'], \
                                         oldest=latest_message)
-                latest_message = get_latest_message(history, latest_message)
+                if not history['ok']:
+                    print ("Error while retrieving History of Channel \"" + group['name'] \
+                            + "\": " + history['error'])
+                else:
+                    latest_message = get_latest_message(history, latest_message)
 
-                PATRICK_BOT.react(history, group['id'])
+                    PATRICK_BOT.react(history, group['id'])
 
             if not DEVMODE:
                 for channel in channels:
                     history = SC.api_call("channels.history", channel=channel['id'], \
                                             oldest=latest_message)
-                    latest_message = get_latest_message(history, latest_message)
+                    if not history['ok']:
+                        print ("Error while retrieving History of Channel \"" + channel['name'] \
+                                + "\": " + history['error'])
+                    else:
+                        latest_message = get_latest_message(history, latest_message)
 
-                    PATRICK_BOT.react(history, channel['id'])
+                        PATRICK_BOT.react(history, channel['id'])
 
             output = "." * (1 + seconds % 3) + "Latest message: " + latest_message + "   \r"
             print (output, end="")
