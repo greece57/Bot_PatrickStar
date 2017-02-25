@@ -17,12 +17,14 @@ class InstrumentReaction(Reaction):
         """ Condition: Music or Insrument is in the Message """
         text = message['text'].lower()
         self.random_number = randint(1, 101)
+        print self.random_number
 
         if "music" in text or "instrument" in text:
             return True
         elif self.random_number == 42:
-            self.tmp_first_name = \
+            user_json = \
                     self.patrick.slack_client.api_call("users.info", user=message['user'])['user']
+            self.tmp_first_name = user_json['profile']['first_name']
             return True
         else:
             return False

@@ -103,7 +103,7 @@ class Patrick(object):
 
     def give_source(self, channel_id):
         """ Sends the source for the last message """
-        if self.last_method == None:
+        if self.last_method is None:
             self.post_message(channel_id, self.NO_SOURCE_TEXT)
         for reaction in self.REACTIONS:
             if self.last_method == reaction.IDENTIFIER:
