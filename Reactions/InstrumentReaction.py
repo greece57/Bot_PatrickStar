@@ -17,7 +17,6 @@ class InstrumentReaction(Reaction):
         """ Condition: Music or Insrument is in the Message """
         text = message['text'].lower()
         self.random_number = randint(1, 101)
-        print self.random_number
 
         if "music" in text or "instrument" in text:
             return True
