@@ -1,0 +1,3 @@
+[submodule "memegenerator"]
+	path = memegenerator
+	url = https://github.com/danieldiekmeier/memegenerator
