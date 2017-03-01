@@ -3,7 +3,7 @@ from __future__ import print_function
 import sys
 import time
 from ChannelTypes import ChannelType
-from patrick import Patrick
+from Patrick import Patrick
 from slackclient import SlackClient
 
 READ_HISTORY_DELAY = 1
