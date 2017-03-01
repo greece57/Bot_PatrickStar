@@ -12,7 +12,7 @@ class WhyDontMemeSendReaction(Reaction):
     CHANNEL_TYPES = [ChannelType.Group, ChannelType.Channel, ChannelType.ImChat]
 
     PATTERN = ["tell them patrick"]
-    FOLDER = "memegenerator"
+    FOLDER = "Memegenerator"
 
     def __init__(self, patrick):
         self.PATTERN.append("tell them " + patrick.str_at_patrick())

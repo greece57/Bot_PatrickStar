@@ -12,7 +12,7 @@ class WhyDontMemeCreateReaction(Reaction):
     CHANNEL_TYPES = [ChannelType.ImChat]
 
     PATTERN = "(why don't [\\w\\W]*) (and [\\w\\W]*)"
-    FOLDER = "memegenerator"
+    FOLDER = "Memegenerator"
     MEME = "whydontwe.jpg"
 
     def __init__(self, patrick):
