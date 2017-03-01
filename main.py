@@ -2,6 +2,7 @@
 from __future__ import print_function
 import sys
 import time
+from ChannelTypes import ChannelType
 from patrick import Patrick
 from slackclient import SlackClient
 
@@ -25,27 +26,34 @@ def retrieve_groups():
     """ get all Groups where Bot is in """
     response_groups = SC.api_call("groups.list")
     response_channels = SC.api_call("channels.list")
-    if response_groups['ok'] and response_channels['ok']:
-        groups = response_groups['groups']
-        channels = response_channels['channels']
-        return groups, channels
+    response_ims = SC.api_call("im.list")
 
-    # Retrieving Error
+    if not response_groups['ok']:
+        print ("Error while retrieving Groups: " + response_groups['error'])
+        groups = []
     else:
-        if not response_groups['ok']:
-            print ("Error while retrieving Groups: " + response_groups['error'])
+        groups = response_groups['groups']
 
-        if not response_channels['ok']:
-            print ("Error while retrieving Channels: " + response_channels['error'])
+    if not response_channels['ok']:
+        print ("Error while retrieving Channels: " + response_channels['error'])
+        channels = []
+    else:
+        channels = response_channels['channels']
 
-        return [], []
+    if not response_ims['ok']:
+        print ("Error while retrieving IMs: " + response_ims['error'])
+        ims = []
+    else:
+        ims = response_ims['ims']
+
+    return groups, channels, ims
 
 
 def remove_initial_history():
     """ returns timestamp of latest message"""
 
     latest = 0
-    groups, channels = retrieve_groups()
+    groups, channels, ims = retrieve_groups()
     for group in groups:
         history = SC.api_call("groups.history", channel=group['id'], oldest=latest)
         if not history['ok']:
@@ -62,6 +70,14 @@ def remove_initial_history():
         else:
             latest = get_latest_message(history, latest)
 
+    for im_chat in ims:
+        history = SC.api_call("im.history", channel=im_chat['id'], oldest=latest)
+        if not history['ok']:
+            print ("Error while retrieving History of Channel \"" + im_chat['name'] \
+                    + "\": " + history['error'])
+        else:
+            latest = get_latest_message(history, latest)
+
     return latest
 
 
@@ -72,18 +88,18 @@ def main_loop():
     seconds = 0
     while True:
         try:
-            groups, channels = retrieve_groups()
+            groups, channels, ims = retrieve_groups()
 
             for group in groups:
                 history = SC.api_call("groups.history", channel=group['id'], \
                                         oldest=latest_message)
                 if not history['ok']:
-                    print ("Error while retrieving History of Channel \"" + group['name'] \
+                    print ("Error while retrieving History of Group \"" + group['name'] \
                             + "\": " + history['error'])
                 else:
                     latest_message = get_latest_message(history, latest_message)
 
-                    PATRICK_BOT.react(history, group['id'])
+                    PATRICK_BOT.react(history, group['id'], ChannelType.Group)
 
             if not DEVMODE:
                 for channel in channels:
@@ -95,7 +111,18 @@ def main_loop():
                     else:
                         latest_message = get_latest_message(history, latest_message)
 
-                        PATRICK_BOT.react(history, channel['id'])
+                        PATRICK_BOT.react(history, channel['id'], ChannelType.Channel)
+
+            for im_chat in ims:
+                history = SC.api_call("im.history", channel=im_chat['id'], \
+                                            oldest=latest_message)
+                if not history['ok']:
+                    print ("Error while retrieving History of IM-Chat of User \"" \
+                                + im_chat['user'] + "\": " + history['error'])
+                else:
+                    latest_message = get_latest_message(history, latest_message)
+
+                    PATRICK_BOT.react(history, im_chat['id'], ChannelType.ImChat)
 
             output = "." * (1 + seconds % 3) + "Latest message: " + latest_message + "   \r"
             print (output, end="")
@@ -105,8 +132,10 @@ def main_loop():
             seconds = seconds + READ_HISTORY_DELAY
         except KeyboardInterrupt:
             raise
-        except:
-            print ("Error! Trying to resume...                  ")
+        except Exception as e:
+            print (" !!! " + e.__doc__ + ": " + e.message + " Trying to resume...               ")
+            if DEVMODE:
+                raise
 
 
 if __name__ == "__main__":

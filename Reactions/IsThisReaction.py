@@ -1,5 +1,6 @@
 """ Patrick Reactions on "Is this <something>?" """
 import re
+from ChannelTypes import ChannelType
 from AbstractReaction import Reaction
 
 class IsThisReaction(Reaction):
@@ -7,6 +8,8 @@ class IsThisReaction(Reaction):
 
     IDENTIFIER = "THIS IS PATRICK"
     SOURCE = "https://www.youtube.com/watch?v=YSzOXtXm8p0"
+
+    CHANNEL_TYPES = [ChannelType.Channel, ChannelType.Group]
 
 
     THIS_IS_PATRICK_MOOD_DICT = {0: "No this is Patrick :slightly_smiling_face:", \

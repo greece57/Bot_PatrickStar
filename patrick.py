@@ -3,6 +3,7 @@ import os
 import imp
 import inspect
 from fnmatch import fnmatch
+from ChannelTypes import ChannelType
 
 class Patrick(object):
     """ Patrick Bot - Does what Patrick does """
@@ -27,7 +28,7 @@ class Patrick(object):
         self.get_all_reactions()
 
 
-    def react(self, history, channel_id):
+    def react(self, history, channel_id, channel_type):
         """ React on messages
 
         Keyword arguments:
@@ -39,7 +40,7 @@ class Patrick(object):
         for message in history['messages']:
             if self.mood < 3:
                 for reaction in self.REACTIONS:
-                    if reaction.condition(message):
+                    if channel_type in reaction.CHANNEL_TYPES and reaction.condition(message):
                         reaction.consequence(channel_id)
                         self.last_method = reaction.IDENTIFIER
                         break
@@ -77,6 +78,14 @@ class Patrick(object):
                 else:
                     print "Couldn't join the Channel " + channel_name
                     print response['error']
+
+    def upload_file(self, channel_id, file_obj):
+        """ Sends a File """
+
+        response = self.slack_client.api_call("files.upload", file=file_obj, channels=channel_id)
+
+        if response['ok'] != True:
+            print "Couldn't send file: " + response['error']
 
 
     def get_channel_name_by_id(self, channel_id):

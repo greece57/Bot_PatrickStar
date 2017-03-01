@@ -1,5 +1,6 @@
 """ Patrick Reactions on Instruments """
 from random import randint
+from ChannelTypes import ChannelType
 from AbstractReaction import Reaction
 
 class InstrumentReaction(Reaction):
@@ -7,6 +8,7 @@ class InstrumentReaction(Reaction):
 
     IDENTIFIER = "Instrument"
     SOURCE = "https://youtu.be/d1JA-nh0IfI?t=4s"
+    CHANNEL_TYPES = [ChannelType.Channel, ChannelType.Group]
 
     def __init__(self, patrick):
         self.random_number = 0

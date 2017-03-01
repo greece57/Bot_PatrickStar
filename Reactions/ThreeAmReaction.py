@@ -1,6 +1,7 @@
 """ Patricks Reaction if it's after 3am """
 from datetime import datetime
 import pytz
+from ChannelTypes import ChannelType
 from AbstractReaction import Reaction
 
 class ThreeAmReaction(Reaction):
@@ -8,6 +9,7 @@ class ThreeAmReaction(Reaction):
 
     IDENTIFIER = "3am"
     SOURCE = "https://www.youtube.com/watch?v=YZ6K3m9TsPs"
+    CHANNEL_TYPES = [ChannelType.Channel, ChannelType.Group]
 
     TIMEZONE = pytz.timezone('Europe/Berlin')
 

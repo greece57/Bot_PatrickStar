@@ -5,6 +5,7 @@ class Reaction(object):
 
     IDENTIFIER = None
     SOURCE = None
+    CHANNEL_TYPES = []
 
     def __init__(self, patrick):
         """ Init of Reaction """

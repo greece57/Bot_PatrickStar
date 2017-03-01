@@ -1,5 +1,6 @@
 """ Patrick Reactions on bad mood """
 import time
+from ChannelTypes import ChannelType
 from AbstractReaction import Reaction
 
 class UglyBarnacleReaction(Reaction):
@@ -7,6 +8,7 @@ class UglyBarnacleReaction(Reaction):
 
     IDENTIFIER = "Ugly Barnacle"
     SOURCE = "https://www.youtube.com/watch?v=WejTV7r3tkU"
+    CHANNEL_TYPES = [ChannelType.Channel, ChannelType.Group]
 
     BAD_MOOD = ["bad mood", "not so good", "don't feel good", "don't feel so good", \
                 "don't feel so well", "don't feel well", " sad", " ill", "feel down", \
