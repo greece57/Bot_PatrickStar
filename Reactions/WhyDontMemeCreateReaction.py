@@ -1,6 +1,6 @@
 """ Patrick Reactions on Instruments """
 import re
-from memegenerator.memegenerator import make_meme
+from Memegenerator.memegenerator import make_meme
 from ChannelTypes import ChannelType
 from AbstractReaction import Reaction
 
