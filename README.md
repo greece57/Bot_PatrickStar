@@ -7,7 +7,8 @@ Install python and pip
 ```sudo apt-get install python-pip```
 
 Install SlackClient for python
-```sudo pip install slackclient```
+```sudo pip install slackclient
+sudo pip install Pillow```
 
 Create a File named "token.key" and insert only(!) your Slack-API Token 
 
