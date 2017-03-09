@@ -133,7 +133,10 @@ def main_loop():
         except KeyboardInterrupt:
             raise
         except Exception as e:
-            print (" !!! " + e.__doc__ + ": " + e.message + " Trying to resume...               ")
+            try:
+                print (" !!! " + str(e.__doc__) + ": " + str(e.message) + " Trying to resume...  ")
+            except:
+                print ("Error while trying to print Error (wtf?!).. Trying ot resume...          ")
             if DEVMODE:
                 raise
 
